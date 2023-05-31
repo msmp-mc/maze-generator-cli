@@ -34,3 +34,16 @@ func GenerateNewMaze(w uint, h uint, algo func(*Maze) error) error {
 func CalcID(l uint, i uint, j uint) int {
 	return int(l*(j-1) + i)
 }
+
+// generateWalls generate the default walls
+func generateWalls(a uint, b uint, isVertical bool) []Wall {
+	walls := make([]Wall, a)
+	for i := uint(0); i < a; i++ {
+		for j := uint(0); j < b; j++ {
+			id := CalcID(a, i, j)
+			removable := !(i == 0 || i == a-1)
+			walls = append(walls, Wall{ID: id, IsVertical: isVertical, IsPresent: true, IsRemovable: removable})
+		}
+	}
+	return walls
+}
