@@ -32,4 +32,16 @@ func TestWallsRandomisedKruskal(t *testing.T) {
 			break
 		}
 	}
+
+	s := m.ToScheme()
+	if len(s.Contents) != 5 {
+		t.Error(utils.FormatTestError("scheme too long", "5", strconv.Itoa(len(s.Contents))))
+		return
+	}
+	excepted := []string{"_|_|_|_|_", "_|_|_|_|_", "_|_|_|_|_", "_|_|_|_|_", "_|_|_|_|_"}
+	for i, c := range s.Contents {
+		if c != excepted[i] {
+			t.Error(utils.FormatTestError("bad scheme of the maze", excepted[i], c))
+		}
+	}
 }
