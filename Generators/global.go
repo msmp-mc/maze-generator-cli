@@ -99,7 +99,7 @@ func (m *Maze) RenderWalls() {
 }
 
 func (s *Scheme) GenerateText() string {
-	l := ""
+	l := " "
 	for i := 0; i < len(s.Contents[0]); i++ {
 		l += "_"
 	}
