@@ -1,17 +1,14 @@
 package Generators
 
 type Maze struct {
-	VerticalWalls   []Wall
-	HorizontalWalls []Wall
-	Width           uint
-	Height          uint
+	Walls  []Wall
+	Width  uint
+	Height uint
 }
 
 type Wall struct {
-	IsVertical  bool
-	IsPresent   bool
-	ID          int
-	IsRemovable bool
+	IsVertical bool
+	ID         int
 }
 
 // GenerateNewMaze generate a new maze with the given information.
@@ -19,31 +16,25 @@ type Wall struct {
 // w is the width, h is the height and algo is the algorithm used
 //
 // Return an error if a problem occurs and nil if there are no errors
-func GenerateNewMaze(w uint, h uint, algo func(*Maze) error) error {
+func GenerateNewMaze(w uint, h uint, algo func(*Maze) error) (Maze, error) {
 	maze := Maze{Height: h, Width: w}
-	return algo(&maze)
-}
-
-// CalcID calculate the ID of the Wall
-//
-// l is the length of the current ID (the width of the maze for a horizontal wall).
-// i is the column number.
-// j is the row number.
-//
-// Return the ID
-func CalcID(l uint, i uint, j uint) int {
-	return int(l*(j-1) + i)
+	err := algo(&maze)
+	return maze, err
 }
 
 // generateWalls generate the default walls
-func generateWalls(a uint, b uint, isVertical bool) []Wall {
-	walls := make([]Wall, a)
-	for i := uint(0); i < a; i++ {
-		for j := uint(0); j < b; j++ {
-			id := CalcID(a, i, j)
-			removable := !(i == 0 || i == a-1)
-			walls = append(walls, Wall{ID: id, IsVertical: isVertical, IsPresent: true, IsRemovable: removable})
-		}
+func (m *Maze) generateWalls() []Wall {
+	xV := (m.Width - 1) * m.Height
+	xH := m.Width * m.Height
+	x := xH + xV
+	walls := make([]Wall, x)
+	for i := uint(0); i < x; i++ {
+		walls[i] = Wall{IsVertical: i >= xH, ID: int(i)}
 	}
+	m.Walls = walls
 	return walls
+}
+
+func (m *Maze) RenderWalls() {
+
 }
