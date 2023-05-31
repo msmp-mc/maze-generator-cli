@@ -6,12 +6,22 @@ type Maze struct {
 	Walls  []Wall
 	Width  uint
 	Height uint
+	Cells  []Cell
 }
 
 type Wall struct {
 	IsVertical bool
 	IsPresent  bool
 	ID         int
+	CellsNear  []*Cell
+}
+
+type Cell struct {
+	ID         int
+	WallTop    *Wall
+	WallBottom *Wall
+	WallLeft   *Wall
+	WallRight  *Wall
 }
 
 type Scheme struct {
@@ -41,6 +51,42 @@ func (m *Maze) generateWalls() []Wall {
 	return walls
 }
 
+func (m *Maze) generateCells() []Cell {
+	c := m.Width * m.Height
+	cells := make([]Cell, c)
+	for i := uint(0); i < m.Height; i++ {
+		for j := uint(0); j < m.Width; j++ {
+			jWall := m.GenJForLeftWallFromJOfCell(j)
+			var wTop *Wall
+			var wBottom *Wall
+			var wLeft *Wall
+			var wRight *Wall
+			if i != 0 {
+				wTop = &m.Walls[m.GenIDFromIJForWall(i-1, uint(jWall+1))]
+			}
+			if i != m.Height-1 {
+				wBottom = &m.Walls[m.GenIDFromIJForWall(i, uint(jWall+1))]
+			}
+			if j != 0 {
+				wLeft = &m.Walls[m.GenIDFromIJForWall(i, j)]
+			}
+			if j != m.Width-1 {
+				wRight = &m.Walls[m.GenIDFromIJForWall(i, uint(jWall+2))]
+			}
+			cell := Cell{
+				ID:         int(m.GenIDFromIJForCell(i, j)),
+				WallTop:    wTop,
+				WallBottom: wBottom,
+				WallLeft:   wLeft,
+				WallRight:  wRight,
+			}
+			cells[i] = cell
+		}
+	}
+	m.Cells = cells
+	return cells
+}
+
 func (m *Maze) GetHorizontalWallsNumber() uint {
 	return m.Width * m.Height
 }
@@ -63,7 +109,7 @@ func (m *Maze) ToScheme() Scheme {
 		str := ""
 		// size max = width+(width-1) because we must not forget the vertical walls
 		for j := uint(0); j < m.Width+(m.Width-1); j++ {
-			wall := m.Walls[m.GenIDFromIJ(i, j)]
+			wall := m.Walls[m.GenIDFromIJForWall(i, j)]
 			if !wall.IsPresent {
 				str += " "
 				continue
@@ -79,17 +125,36 @@ func (m *Maze) ToScheme() Scheme {
 	return Scheme{Contents: contents}
 }
 
-// GenIDFromIJ generate the ID of the wall from it's coords representation (IJ)
+// GenIDFromIJForWall generate the ID of the wall from it's coords representation (IJ)
 //
 // i is the number of rows
 // j is the number of columns
 //
 // Return the id
-func (m *Maze) GenIDFromIJ(i uint, j uint) uint {
+func (m *Maze) GenIDFromIJForWall(i uint, j uint) uint {
 	if j%2 == 0 {
 		return m.Height*i + j/2 - 1*i
 	}
 	return m.GetHorizontalWallsNumber() + m.Height*i + (j-j%2)/2 - 1*i
+}
+
+// GenIDFromIJForCell generate the ID of the cell from it's coords representation (IJ)
+//
+// i is the number of rows
+// j is the number of columns
+//
+// Return the id
+func (m *Maze) GenIDFromIJForCell(i uint, j uint) uint {
+	return m.Height*i + j
+}
+
+// GenJForLeftWallFromJOfCell generate the J coords for the wall at the left of the cell
+//
+// j is the number of columns
+//
+// Return the j (number of columns) for the left wall of the cell or -1 if j = 0
+func (m *Maze) GenJForLeftWallFromJOfCell(j uint) int {
+	return int(2*(j-1) + 1)
 }
 
 func (m *Maze) RenderWalls() {

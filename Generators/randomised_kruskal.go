@@ -8,5 +8,6 @@ type kruskal struct {
 func NewRandomisedKruskal(b *Maze) error {
 	m := kruskal{b}
 	m.generateWalls()
+	m.generateCells()
 	return nil
 }
