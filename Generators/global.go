@@ -22,6 +22,7 @@ type Cell struct {
 	WallBottom *Wall
 	WallLeft   *Wall
 	WallRight  *Wall
+	MergedCell []*Cell
 }
 
 type Scheme struct {
@@ -79,8 +80,21 @@ func (m *Maze) generateCells() []Cell {
 				WallBottom: wBottom,
 				WallLeft:   wLeft,
 				WallRight:  wRight,
+				MergedCell: []*Cell{},
 			}
-			cells[i] = cell
+			if wTop != nil {
+				wTop.CellsNear = append(wTop.CellsNear, &cell)
+			}
+			if wBottom != nil {
+				wBottom.CellsNear = append(wBottom.CellsNear, &cell)
+			}
+			if wLeft != nil {
+				wLeft.CellsNear = append(wLeft.CellsNear, &cell)
+			}
+			if wRight != nil {
+				wRight.CellsNear = append(wRight.CellsNear, &cell)
+			}
+			cells[m.GenIDFromIJForCell(i, j)] = cell
 		}
 	}
 	m.Cells = cells
@@ -164,14 +178,33 @@ func (m *Maze) RenderWalls() {
 }
 
 func (s *Scheme) GenerateText() string {
-	l := " "
-	for i := 0; i < len(s.Contents[0]); i++ {
+	var l string
+	for i := 0; i <= len(s.Contents[0]); i++ {
+		if i%2 == 0 {
+			l += " "
+			continue
+		}
 		l += "_"
 	}
 	f := fmt.Sprintf("%s\n", l)
 	for _, i := range s.Contents {
 		f += fmt.Sprintf("|%s|\n", i)
 	}
-	f += fmt.Sprintf("%s\n", l)
 	return f
+}
+
+// mergeCells merge two cells and their group
+//
+// big is the cell with the biggest group.
+// small is the cell with the smallest group.
+func mergeCells(big *Cell, small *Cell) {
+	for _, c := range small.MergedCell {
+		c.ID = big.ID
+	}
+	small.ID = big.ID
+	if len(small.MergedCell) == 0 {
+		big.MergedCell = append(big.MergedCell, small.MergedCell...)
+	}
+	println(len(big.MergedCell))
+	big.MergedCell = append(big.MergedCell, small)
 }
