@@ -25,7 +25,7 @@ func main() {
 	height0 := regexp.MustCompile(`-h [0-9]+`)
 	output0 := regexp.MustCompile(`-o [0-9a-zA-Z/.\-_]+`)
 	difficulty0 := regexp.MustCompile(`-d [0-9]+`)
-	help0 := regexp.MustCompile(`-h`)
+	help0 := regexp.MustCompile(`-help`)
 	unWidth := widthO.FindString(cli)
 	unHeight := height0.FindString(cli)
 	unOutput := output0.FindString(cli)
