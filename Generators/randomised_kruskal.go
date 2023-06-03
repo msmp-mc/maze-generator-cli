@@ -36,7 +36,7 @@ func NewRandomisedKruskal(b *Maze) error {
 	println("Starting the difficulty generation...")
 	if m.Difficulty > 0 {
 		size := len(m.Walls)
-		for n := 0; n < int(math.Floor(float64(size/4)*(float64(m.Difficulty)*0.1))); n++ {
+		for n := 0; n < int(math.Floor(float64(size/4)*(float64(m.Difficulty)*0.05))); n++ {
 			id := uint(utils.RandMax(uint(size - 1)))
 			i, j := m.GenIJFromIDOfWall(id)
 			if i == 0 || i == m.Width-1 || j == m.Height-1 {
