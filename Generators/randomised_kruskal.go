@@ -28,19 +28,10 @@ func NewRandomisedKruskal(b *Maze) error {
 		}
 		i++
 	}
-	println("Merging done!")
 	if len(m.Cells) != int(m.Width*m.Height) {
 		return fmt.Errorf("bad length of cells: %d", len(m.Cells))
 	}
-	var f string
-	for i, cell := range m.Cells {
-		if i != 0 && uint(i)%m.Height == 0 {
-			println(f)
-			f = ""
-		}
-		f += fmt.Sprintf("%d ", cell.ID)
-	}
-	println(f)
+	println("Merging done!")
 	return nil
 }
 
@@ -71,7 +62,6 @@ func (m *kruskal) mergeRandomly() error {
 	if !wall.IsPresent {
 		return nil
 	}
-	wall.IsPresent = false
 	var mergeWith *Cell
 	if len(wall.CellsNear) != 2 {
 		return fmt.Errorf("the wall with the id %d have only %d cells near", wall.ID, len(wall.CellsNear))
@@ -83,36 +73,17 @@ func (m *kruskal) mergeRandomly() error {
 	} else {
 		return nil
 	}
+	wall.IsPresent = false
 	if mergeWith.ID == cell.ID {
 		return fmt.Errorf("the cell with the id %d is the same as the cell with the id %d", mergeWith.ID, cell.ID)
 	}
 	if len(*cell.MergedRef.MergedCell) >= len(*mergeWith.MergedRef.MergedCell) {
 		mergeCells(cell, mergeWith)
-
-		var f string
-		for i, c := range m.Cells {
-			if i != 0 && uint(i)%m.Height == 0 {
-				println(f)
-				f = ""
-			}
-			f += fmt.Sprintf("%d ", c.ID)
-		}
-		println(f)
-
+		m.RenderWalls()
 		return nil
 	}
 	mergeCells(mergeWith, cell)
-
-	var f string
-	for i, c := range m.Cells {
-		if i != 0 && uint(i)%m.Height == 0 {
-			println(f)
-			f = ""
-		}
-		f += fmt.Sprintf("%d ", c.ID)
-	}
-	println(f)
-
+	m.RenderWalls()
 	return nil
 }
 
