@@ -1,12 +1,14 @@
 package Generators
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Maze struct {
 	Walls  []Wall
 	Width  uint
 	Height uint
-	Cells  []Cell
+	Cells  []*Cell
 }
 
 type Wall struct {
@@ -22,7 +24,9 @@ type Cell struct {
 	WallBottom *Wall
 	WallLeft   *Wall
 	WallRight  *Wall
-	MergedCell []*Cell
+	MergedCell *[]*Cell
+	// MergedRef refers to the parent cell containing the full MergedCell
+	MergedRef *Cell
 }
 
 type Scheme struct {
@@ -52,9 +56,9 @@ func (m *Maze) generateWalls() []Wall {
 	return walls
 }
 
-func (m *Maze) generateCells() []Cell {
+func (m *Maze) generateCells() []*Cell {
 	c := m.Width * m.Height
-	cells := make([]Cell, c)
+	cells := make([]*Cell, c)
 	for i := uint(0); i < m.Height; i++ {
 		for j := uint(0); j < m.Width; j++ {
 			jWall := m.GenJForLeftWallFromJOfCell(j)
@@ -69,7 +73,7 @@ func (m *Maze) generateCells() []Cell {
 				wBottom = &m.Walls[m.GenIDFromIJForWall(i, uint(jWall+1))]
 			}
 			if j != 0 {
-				wLeft = &m.Walls[m.GenIDFromIJForWall(i, j)]
+				wLeft = &m.Walls[m.GenIDFromIJForWall(i, uint(jWall))]
 			}
 			if j != m.Width-1 {
 				wRight = &m.Walls[m.GenIDFromIJForWall(i, uint(jWall+2))]
@@ -80,8 +84,9 @@ func (m *Maze) generateCells() []Cell {
 				WallBottom: wBottom,
 				WallLeft:   wLeft,
 				WallRight:  wRight,
-				MergedCell: []*Cell{},
 			}
+			cell.MergedCell = &[]*Cell{&cell}
+			cell.MergedRef = &cell
 			if wTop != nil {
 				wTop.CellsNear = append(wTop.CellsNear, &cell)
 			}
@@ -94,7 +99,7 @@ func (m *Maze) generateCells() []Cell {
 			if wRight != nil {
 				wRight.CellsNear = append(wRight.CellsNear, &cell)
 			}
-			cells[m.GenIDFromIJForCell(i, j)] = cell
+			cells[m.GenIDFromIJForCell(i, j)] = &cell
 		}
 	}
 	m.Cells = cells
@@ -147,9 +152,9 @@ func (m *Maze) ToScheme() Scheme {
 // Return the id
 func (m *Maze) GenIDFromIJForWall(i uint, j uint) uint {
 	if j%2 == 0 {
-		return m.Height*i + j/2 - 1*i
+		return m.Height*i + j/2
 	}
-	return m.GetHorizontalWallsNumber() + m.Height*i + (j-j%2)/2 - 1*i
+	return m.GetHorizontalWallsNumber() + m.Height*i + (j-j%2)/2 - i*1
 }
 
 // GenIDFromIJForCell generate the ID of the cell from it's coords representation (IJ)
@@ -198,13 +203,49 @@ func (s *Scheme) GenerateText() string {
 // big is the cell with the biggest group.
 // small is the cell with the smallest group.
 func mergeCells(big *Cell, small *Cell) {
-	for _, c := range small.MergedCell {
-		c.ID = big.ID
+	println("#------")
+	println("Merging the cell with the id", big.ID, "with the cell with the id", small.ID)
+	println("len big", len(*big.MergedRef.MergedCell))
+	println("len small", len(*small.MergedRef.MergedCell))
+	merged := append(*big.MergedRef.MergedCell, *small.MergedRef.MergedCell...)
+	//for _, u := range *small.MergedRef.MergedCell {
+	//	if len(*u.MergedCell) == 0 {
+	//		continue
+	//	}
+	//	if slices.Contains(merged, u) {
+	//		continue
+	//	}
+	//	merged = append(merged, u)
+	//	for _, c := range *u.MergedCell {
+	//		if slices.Contains(merged, c) {
+	//			continue
+	//		}
+	//		merged = append(merged, c)
+	//	}
+	//}
+	big.MergedRef.MergedCell = &merged
+	small.MergedRef = big.MergedRef
+	big.MergedRef.updateCells()
+	small.updateMergedRef(big.MergedRef)
+
+	println("len", len(*big.MergedRef.MergedCell))
+	println("------#")
+}
+
+func (m *Cell) updateCells() {
+	for _, c := range *m.MergedCell {
+		if c.ID == m.ID {
+			continue
+		}
+		//println("update", c.ID, "with", m.ID)
+		c.ID = m.ID
+		c.MergedCell = m.MergedCell
 	}
-	small.ID = big.ID
-	if len(small.MergedCell) == 0 {
-		big.MergedCell = append(big.MergedCell, small.MergedCell...)
+}
+
+func (m *Cell) updateMergedRef(newRef *Cell) {
+	for _, c := range *m.MergedRef.MergedCell {
+		c.MergedRef = newRef
 	}
-	println(len(big.MergedCell))
-	big.MergedCell = append(big.MergedCell, small)
+	m.MergedRef.MergedRef = newRef
 }
