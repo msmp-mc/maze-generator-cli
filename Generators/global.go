@@ -56,6 +56,7 @@ func (m *Maze) generateWalls() []Wall {
 	return walls
 }
 
+// generateCells generate the default cells
 func (m *Maze) generateCells() []*Cell {
 	c := m.Width * m.Height
 	cells := make([]*Cell, c)
@@ -106,22 +107,27 @@ func (m *Maze) generateCells() []*Cell {
 	return cells
 }
 
+// GetHorizontalWallsNumber return the number of horizontal walls
 func (m *Maze) GetHorizontalWallsNumber() uint {
 	return m.Width * m.Height
 }
 
+// GetVerticalWallsNumber return the number of vertical walls
 func (m *Maze) GetVerticalWallsNumber() uint {
 	return (m.Width - 1) * m.Height
 }
 
+// GetVerticalWalls return the vertical walls
 func (m *Maze) GetVerticalWalls() []Wall {
 	return m.Walls[m.GetHorizontalWallsNumber():]
 }
 
+// GetHorizontalWalls return the horizontal walls
 func (m *Maze) GetHorizontalWalls() []Wall {
 	return m.Walls[:m.GetHorizontalWallsNumber()-1]
 }
 
+// ToScheme turn a maze into the scheme representing the maze
 func (m *Maze) ToScheme() Scheme {
 	contents := make([]string, m.Height)
 	for i := uint(0); i < m.Height; i++ {
@@ -176,12 +182,14 @@ func (m *Maze) GenJForLeftWallFromJOfCell(j uint) int {
 	return int(2*(j-1) + 1)
 }
 
+// RenderWalls print the walls of the maze
 func (m *Maze) RenderWalls() {
 	s := m.ToScheme()
 	text := s.GenerateText()
 	println(text)
 }
 
+// GenerateText return the text representing a scheme of the maze
 func (s *Scheme) GenerateText() string {
 	var l string
 	for i := 0; i <= len(s.Contents[0]); i++ {
@@ -203,46 +211,25 @@ func (s *Scheme) GenerateText() string {
 // big is the cell with the biggest group.
 // small is the cell with the smallest group.
 func mergeCells(big *Cell, small *Cell) {
-	println("#------")
-	println("Merging the cell with the id", big.ID, "with the cell with the id", small.ID)
-	println("len big", len(*big.MergedRef.MergedCell))
-	println("len small", len(*small.MergedRef.MergedCell))
 	merged := append(*big.MergedRef.MergedCell, *small.MergedRef.MergedCell...)
-	//for _, u := range *small.MergedRef.MergedCell {
-	//	if len(*u.MergedCell) == 0 {
-	//		continue
-	//	}
-	//	if slices.Contains(merged, u) {
-	//		continue
-	//	}
-	//	merged = append(merged, u)
-	//	for _, c := range *u.MergedCell {
-	//		if slices.Contains(merged, c) {
-	//			continue
-	//		}
-	//		merged = append(merged, c)
-	//	}
-	//}
 	big.MergedRef.MergedCell = &merged
 	small.MergedRef = big.MergedRef
 	big.MergedRef.updateCells()
 	small.updateMergedRef(big.MergedRef)
-
-	println("len", len(*big.MergedRef.MergedCell))
-	println("------#")
 }
 
+// updateCells update the cells after a merge
 func (m *Cell) updateCells() {
 	for _, c := range *m.MergedCell {
 		if c.ID == m.ID {
 			continue
 		}
-		//println("update", c.ID, "with", m.ID)
 		c.ID = m.ID
 		c.MergedCell = m.MergedCell
 	}
 }
 
+// updateMergedRef update the merged reference after a merge
 func (m *Cell) updateMergedRef(newRef *Cell) {
 	for _, c := range *m.MergedRef.MergedCell {
 		c.MergedRef = newRef

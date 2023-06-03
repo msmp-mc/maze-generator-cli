@@ -35,6 +35,7 @@ func NewRandomisedKruskal(b *Maze) error {
 	return nil
 }
 
+// mergeRandomly merge two random cells
 func (m *kruskal) mergeRandomly() error {
 	id := utils.RandMax(uint(len(m.Cells) - 1))
 	cell := m.Cells[id]
@@ -87,6 +88,9 @@ func (m *kruskal) mergeRandomly() error {
 	return nil
 }
 
+// isFinished check if the maze is finished
+//
+// Return true if the maze is finished, false otherwise
 func (m *kruskal) isFinished() bool {
 	return uint(len(*m.Cells[0].MergedRef.MergedCell)) == m.Width*m.Height
 }
