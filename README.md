@@ -13,6 +13,12 @@ It has also another parameters:
 - `-d (0,1,2)` - Set the difficulty or 0 by default (0 = easy, 1 = hard, 2 = hardcore)
 - `-help` - Show the help
 
+Example:
+```bash
+./maze-generator -h 10 -w 10 -o maze.txt -d 1
+```
+It creates a hard 10x10 maze in the file called `maze.txt`.
+
 ## Technologies
 
 - Go 1.20
