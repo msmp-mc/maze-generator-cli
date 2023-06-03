@@ -2,6 +2,7 @@ package Generators
 
 import (
 	"fmt"
+	"os"
 )
 
 type Maze struct {
@@ -204,6 +205,11 @@ func (s *Scheme) GenerateText() string {
 		f += fmt.Sprintf("|%s|\n", i)
 	}
 	return f
+}
+
+func (m *Maze) Output(path string) error {
+	scheme := m.ToScheme()
+	return os.WriteFile(path, []byte(scheme.GenerateText()), 0664)
 }
 
 // mergeCells merge two cells and their group
