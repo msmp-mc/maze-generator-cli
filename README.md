@@ -11,6 +11,7 @@ This application takes two parameters:
 It has also another parameters:
 - `-o string` - Set the output file (if it does not give, no output in file)
 - `-d (0,1,2)` - Set the difficulty or 0 by default (0 = easy, 1 = hard, 2 = hardcore)
+- `-h` - Show the help
 
 ## Technologies
 

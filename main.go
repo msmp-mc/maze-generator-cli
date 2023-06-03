@@ -25,10 +25,16 @@ func main() {
 	height0 := regexp.MustCompile(`-h [0-9]+`)
 	output0 := regexp.MustCompile(`-o [0-9a-zA-Z/.\-_]+`)
 	difficulty0 := regexp.MustCompile(`-d [0-9]+`)
+	help0 := regexp.MustCompile(`-h`)
 	unWidth := widthO.FindString(cli)
 	unHeight := height0.FindString(cli)
 	unOutput := output0.FindString(cli)
 	unDifficulty := difficulty0.FindString(cli)
+	t := help0.FindString(cli)
+	if t != "" {
+		help()
+		return
+	}
 	if unHeight == "" || unWidth == "" {
 		help()
 		return
@@ -71,6 +77,11 @@ func help() {
 	println("------------------------------")
 	println("HELP OF THE MAZE GENERATOR CLI")
 	println("------------------------------")
-	println("-w uint -> Width of the maze")
-	println("-h uint -> Height of the maze")
+	println("Required arguments:")
+	println("  -w uint -> Width of the maze")
+	println("  -h uint -> Height of the maze\n")
+	println("Optional arguments:")
+	println("  -d uint -> Difficulty of the maze")
+	println("  -o string -> Output file of the new maze")
+
 }
