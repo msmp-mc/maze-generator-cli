@@ -24,9 +24,11 @@ func main() {
 	widthO := regexp.MustCompile(`-w [0-9]+`)
 	height0 := regexp.MustCompile(`-h [0-9]+`)
 	output0 := regexp.MustCompile(`-o [0-9a-zA-Z/.\-_]+`)
+	difficulty0 := regexp.MustCompile(`-d [0-9]+`)
 	unWidth := widthO.FindString(cli)
 	unHeight := height0.FindString(cli)
 	unOutput := output0.FindString(cli)
+	unDifficulty := difficulty0.FindString(cli)
 	if unHeight == "" || unWidth == "" {
 		help()
 		return
@@ -42,7 +44,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	m, err := Generators.GenerateNewMaze(uint(w), uint(h), Generators.NewRandomisedKruskal)
+	d := 0
+	if unDifficulty != "" {
+		strDifficulty := strings.ReplaceAll(unDifficulty, "-d ", "")
+		d, err = strconv.Atoi(strDifficulty)
+		if err != nil {
+			panic(err)
+		}
+	}
+	m, err := Generators.GenerateNewMaze(uint(w), uint(h), uint(d), Generators.NewRandomisedKruskal)
 	if err != nil {
 		panic(err)
 	}

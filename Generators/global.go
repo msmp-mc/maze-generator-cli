@@ -6,10 +6,11 @@ import (
 )
 
 type Maze struct {
-	Walls  []Wall
-	Width  uint
-	Height uint
-	Cells  []*Cell
+	Walls      []Wall
+	Width      uint
+	Height     uint
+	Cells      []*Cell
+	Difficulty uint
 }
 
 type Wall struct {
@@ -36,11 +37,12 @@ type Scheme struct {
 
 // GenerateNewMaze generate a new maze with the given information.
 //
-// w is the width, h is the height and algo is the algorithm used
+// w is the width, h is the height, difficulty is the difficulty (0 for easy, 1 for hard and 2 for hardcore)
+// and algo is the algorithm used
 //
 // Return an error if a problem occurs and nil if there are no errors
-func GenerateNewMaze(w uint, h uint, algo func(*Maze) error) (Maze, error) {
-	maze := Maze{Height: h, Width: w}
+func GenerateNewMaze(w uint, h uint, difficulty uint, algo func(*Maze) error) (Maze, error) {
+	maze := Maze{Height: h, Width: w, Difficulty: difficulty}
 	err := algo(&maze)
 	return maze, err
 }
@@ -153,7 +155,7 @@ func (m *Maze) ToScheme() Scheme {
 
 // GenIDFromIJForWall generate the ID of the wall from it's coords representation (IJ)
 //
-// i is the number of rows
+// i is the number of rows,
 // j is the number of columns
 //
 // Return the id
@@ -166,7 +168,7 @@ func (m *Maze) GenIDFromIJForWall(i uint, j uint) uint {
 
 // GenIDFromIJForCell generate the ID of the cell from it's coords representation (IJ)
 //
-// i is the number of rows
+// i is the number of rows,
 // j is the number of columns
 //
 // Return the id
@@ -181,6 +183,11 @@ func (m *Maze) GenIDFromIJForCell(i uint, j uint) uint {
 // Return the j (number of columns) for the left wall of the cell or -1 if j = 0
 func (m *Maze) GenJForLeftWallFromJOfCell(j uint) int {
 	return int(2*(j-1) + 1)
+}
+
+func (m *Maze) GenIJFromIDOfWall(id uint) (uint, uint) {
+	i := (id - id%m.Height) / m.Height
+	return i, id - (i)*m.Height
 }
 
 // RenderWalls print the walls of the maze

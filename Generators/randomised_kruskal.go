@@ -3,6 +3,7 @@ package Generators
 import (
 	"fmt"
 	"github.com/msmp-core/maze-generator-cli/utils"
+	"math"
 )
 
 type kruskal struct {
@@ -30,6 +31,19 @@ func NewRandomisedKruskal(b *Maze) error {
 	}
 	if len(m.Cells) != int(m.Width*m.Height) {
 		return fmt.Errorf("bad length of cells: %d", len(m.Cells))
+	}
+	println("Merging finished!")
+	println("Starting the difficulty generation...")
+	if m.Difficulty > 0 {
+		size := len(m.Walls)
+		for n := 0; n < int(math.Floor(float64(size/4)*(float64(m.Difficulty)*0.1))); n++ {
+			id := uint(utils.RandMax(uint(size - 1)))
+			i, j := m.GenIJFromIDOfWall(id)
+			if i == 0 || i == m.Width-1 || j == m.Height-1 {
+				continue
+			}
+			m.Walls[id].IsPresent = false
+		}
 	}
 	println("Merging done!")
 	return nil
