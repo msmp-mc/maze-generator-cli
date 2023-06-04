@@ -20,7 +20,7 @@ func NewRandomisedKruskal(b *Maze) error {
 	println("Merging...")
 	i := 0
 	for !m.isFinished() {
-		if i%1000 == 0 {
+		if i%10000 == 0 {
 			m.RenderWalls()
 		}
 		err := m.mergeRandomly()
