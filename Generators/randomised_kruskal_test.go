@@ -7,7 +7,7 @@ import (
 )
 
 func TestWallsRandomisedKruskal(t *testing.T) {
-	m, err := GenerateNewMaze(5, 5, NewRandomisedKruskal)
+	m, err := GenerateNewMaze(5, 5, 1, 0, NewRandomisedKruskal)
 	if err != nil {
 		t.Error(err.Error())
 		return

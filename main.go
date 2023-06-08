@@ -32,6 +32,9 @@ func main() {
 			ID: "d", Help: "Difficulty of the maze", ArgsRegex: `[0-9]+`, Required: false, IsInt: true, Disabled: false,
 		},
 		{
+			ID: "g", Help: "Number of random gates", ArgsRegex: `[0-9]+`, Required: false, IsInt: true, Disabled: false,
+		},
+		{
 			ID: "help", Help: "Show this help", ArgsRegex: ``, Required: false, IsInt: false, Disabled: false,
 		},
 	}
@@ -49,21 +52,24 @@ func main() {
 	var s int
 	var out string
 	d := 0
-	for _, g := range got {
-		switch g.ID {
+	g := 0
+	for _, gt := range got {
+		switch gt.ID {
 		case "s":
-			s = g.Value.(int)
+			s = gt.Value.(int)
 		case "d":
-			d = g.Value.(int)
+			d = gt.Value.(int)
 		case "o":
-			out = g.Value.(string)
+			out = gt.Value.(string)
+		case "g":
+			g = gt.Value.(int)
 		case "help":
 			app.Help()
 			return
 		}
 	}
 
-	m, err := Generators.GenerateNewMaze(uint(s), uint(s), uint(d), Generators.NewRandomisedKruskal)
+	m, err := Generators.GenerateNewMaze(uint(s), uint(s), uint(d), uint(g), Generators.NewRandomisedKruskal)
 	if err != nil {
 		panic(err)
 	}

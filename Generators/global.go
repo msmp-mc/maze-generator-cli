@@ -2,6 +2,7 @@ package Generators
 
 import (
 	"fmt"
+	"github.com/msmp-core/maze-generator-cli/utils"
 	"os"
 )
 
@@ -11,6 +12,13 @@ type Maze struct {
 	Height     uint
 	Cells      []*Cell
 	Difficulty uint
+	Gates      uint
+	GatesLoc   []GateLoc
+}
+
+type GateLoc struct {
+	I int
+	J int
 }
 
 type Wall struct {
@@ -37,13 +45,14 @@ type Scheme struct {
 
 // GenerateNewMaze generate a new maze with the given information.
 //
-// w is the width, h is the height, difficulty is the difficulty (0 for easy, 1 for hard and 2 for hardcore)
-// and algo is the algorithm used
+// w is the width, h is the height, difficulty is the difficulty (0 for easy, 1 for hard and 2 for hardcore), gates is
+// the number of gates present and algo is the algorithm used
 //
 // Return an error if a problem occurs and nil if there are no errors
-func GenerateNewMaze(w uint, h uint, difficulty uint, algo func(*Maze) error) (Maze, error) {
-	maze := Maze{Height: h, Width: w, Difficulty: difficulty}
+func GenerateNewMaze(w uint, h uint, difficulty uint, gates uint, algo func(*Maze) error) (Maze, error) {
+	maze := Maze{Height: h, Width: w, Difficulty: difficulty, Gates: gates}
 	err := algo(&maze)
+	maze.handleGates()
 	return maze, err
 }
 
@@ -182,7 +191,7 @@ func (m *Maze) GenIDFromIJForCell(i uint, j uint) uint {
 //
 // Return the j (number of columns) for the left wall of the cell or -1 if j = 0
 func (m *Maze) GenJForLeftWallFromJOfCell(j uint) int {
-	return int(2*(j-1) + 1)
+	return int(2*j - 1)
 }
 
 func (m *Maze) GenIJFromIDOfWall(id uint) (uint, uint) {
@@ -193,30 +202,61 @@ func (m *Maze) GenIJFromIDOfWall(id uint) (uint, uint) {
 // RenderWalls print the walls of the maze
 func (m *Maze) RenderWalls() {
 	s := m.ToScheme()
-	text := s.GenerateText()
+	text := s.GenerateText(m)
 	println(text)
 }
 
 // GenerateText return the text representing a scheme of the maze
-func (s *Scheme) GenerateText() string {
+func (s *Scheme) GenerateText(m *Maze) string {
 	var l string
 	for i := 0; i <= len(s.Contents[0]); i++ {
 		if i%2 == 0 {
 			l += " "
 			continue
 		}
+		done := false
+		for _, g := range m.GatesLoc {
+			if done {
+				continue
+			}
+			if g.I == -1 && g.J == i {
+				l += " "
+				done = true
+			}
+		}
+		if done {
+			continue
+		}
 		l += "_"
 	}
 	f := fmt.Sprintf("%s\n", l)
-	for _, i := range s.Contents {
-		f += fmt.Sprintf("|%s|\n", i)
+	for id, i := range s.Contents {
+		left := true
+		right := true
+		for _, g := range m.GatesLoc {
+			if g.I != id {
+				continue
+			}
+			if g.J == -1 {
+				left = false
+			} else if g.J == int(2*m.Width) {
+				right = false
+			}
+		}
+		if right && left {
+			f += fmt.Sprintf("|%s|\n", i)
+		} else if right {
+			f += fmt.Sprintf(" %s|\n", i)
+		} else if left {
+			f += fmt.Sprintf("|%s \n", i)
+		}
 	}
 	return f
 }
 
 func (m *Maze) Output(path string) error {
 	scheme := m.ToScheme()
-	return os.WriteFile(path, []byte(scheme.GenerateText()), 0664)
+	return os.WriteFile(path, []byte(scheme.GenerateText(m)), 0664)
 }
 
 // mergeCells merge two cells and their group
@@ -248,4 +288,51 @@ func (m *Cell) updateMergedRef(newRef *Cell) {
 		c.MergedRef = newRef
 	}
 	m.MergedRef.MergedRef = newRef
+}
+
+// handleGates handle the gates of the maze
+func (m *Maze) handleGates() {
+	if m.Gates == 0 {
+		println("No gates to handle")
+		return
+	}
+	for i := uint(0); i < m.Gates; i++ {
+		rand := utils.RandMax(3)
+		var r int
+		switch rand {
+		case 0:
+			// top
+			r = utils.RandMax(m.Width - 1)
+			if r%2 == 0 {
+				if r == int(m.Width-1) {
+					r--
+				} else {
+					r++
+				}
+			}
+			m.GatesLoc = append(m.GatesLoc, GateLoc{I: -1, J: r})
+		case 1:
+			// bottom
+			r = utils.RandMax(m.Width - 1)
+			if r%2 == 0 {
+				if r == int(m.Width-1) {
+					r--
+				} else {
+					r++
+				}
+			}
+			m.GatesLoc = append(m.GatesLoc, GateLoc{I: int(m.Height - 1), J: r})
+			wall := &m.Walls[m.GenIDFromIJForCell(m.Height-1, uint(r))]
+			wall.IsPresent = false
+		case 2:
+			// left
+			r = utils.RandMax(m.Height - 1)
+			m.GatesLoc = append(m.GatesLoc, GateLoc{I: r, J: -1})
+		case 3:
+			// right
+			r = utils.RandMax(m.Height - 1)
+			w := 2 * m.Width
+			m.GatesLoc = append(m.GatesLoc, GateLoc{I: r, J: int(w)})
+		}
+	}
 }
