@@ -21,13 +21,15 @@ func main() {
 		}
 		cli += a + " "
 	}
-	widthO := regexp.MustCompile(`-w [0-9]+`)
-	height0 := regexp.MustCompile(`-h [0-9]+`)
+	//widthO := regexp.MustCompile(`-w [0-9]+`)
+	//height0 := regexp.MustCompile(`-h [0-9]+`)
+	size0 := regexp.MustCompile(`-s [0-9]+`)
 	output0 := regexp.MustCompile(`-o [0-9a-zA-Z/.\-_]+`)
 	difficulty0 := regexp.MustCompile(`-d [0-9]+`)
 	help0 := regexp.MustCompile(`-help`)
-	unWidth := widthO.FindString(cli)
-	unHeight := height0.FindString(cli)
+	//unWidth := widthO.FindString(cli)
+	//unHeight := height0.FindString(cli)
+	unSize := size0.FindString(cli)
 	unOutput := output0.FindString(cli)
 	unDifficulty := difficulty0.FindString(cli)
 	t := help0.FindString(cli)
@@ -35,18 +37,27 @@ func main() {
 		help()
 		return
 	}
-	if unHeight == "" || unWidth == "" {
+	//if unHeight == "" || unWidth == "" {
+	//	help()
+	//	return
+	//}
+	if unSize == "" {
 		help()
 		return
 	}
-	strWidth := strings.ReplaceAll(unWidth, "-w ", "")
-	strHeight := strings.ReplaceAll(unHeight, "-h ", "")
+	//strWidth := strings.ReplaceAll(unWidth, "-w ", "")
+	//strHeight := strings.ReplaceAll(unHeight, "-h ", "")
+	strSize := strings.ReplaceAll(unSize, "-s ", "")
 
-	w, err := strconv.Atoi(strWidth)
-	if err != nil {
-		panic(err)
-	}
-	h, err := strconv.Atoi(strHeight)
+	//w, err := strconv.Atoi(strWidth)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//h, err := strconv.Atoi(strHeight)
+	//if err != nil {
+	//	panic(err)
+	//}
+	s, err := strconv.Atoi(strSize)
 	if err != nil {
 		panic(err)
 	}
@@ -58,7 +69,7 @@ func main() {
 			panic(err)
 		}
 	}
-	m, err := Generators.GenerateNewMaze(uint(w), uint(h), uint(d), Generators.NewRandomisedKruskal)
+	m, err := Generators.GenerateNewMaze(uint(s), uint(s), uint(d), Generators.NewRandomisedKruskal)
 	if err != nil {
 		panic(err)
 	}
@@ -78,8 +89,9 @@ func help() {
 	println("HELP OF THE MAZE GENERATOR CLI")
 	println("------------------------------")
 	println("Required arguments:")
-	println("  -w uint -> Width of the maze")
-	println("  -h uint -> Height of the maze\n")
+	//println("  -w uint -> Width of the maze")
+	//println("  -h uint -> Height of the maze\n")
+	println("  -s uint -> Size of one side of the maze\n")
 	println("Optional arguments:")
 	println("  -d uint -> Difficulty of the maze")
 	println("  -o string -> Output file of the new maze")
