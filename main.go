@@ -2,16 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/msmp-core/maze-generator-cli/CLI"
 	"github.com/msmp-core/maze-generator-cli/Generators"
 	"os"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 func main() {
 	if len(os.Args) == 1 {
-		help()
+		//TODO: show help
 		return
 	}
 	cli := ""
@@ -21,79 +19,58 @@ func main() {
 		}
 		cli += a + " "
 	}
-	//widthO := regexp.MustCompile(`-w [0-9]+`)
-	//height0 := regexp.MustCompile(`-h [0-9]+`)
-	size0 := regexp.MustCompile(`-s [0-9]+`)
-	output0 := regexp.MustCompile(`-o [0-9a-zA-Z/.\-_]+`)
-	difficulty0 := regexp.MustCompile(`-d [0-9]+`)
-	help0 := regexp.MustCompile(`-help`)
-	//unWidth := widthO.FindString(cli)
-	//unHeight := height0.FindString(cli)
-	unSize := size0.FindString(cli)
-	unOutput := output0.FindString(cli)
-	unDifficulty := difficulty0.FindString(cli)
-	t := help0.FindString(cli)
-	if t != "" {
-		help()
-		return
+	options := []*CLI.Option{
+		{
+			ID: "s", Help: "Size of one side of the maze", ArgsRegex: `[0-9]+`, Required: true, IsInt: true, Disabled: false,
+		},
+		{
+			ID: "w", Help: "Width of the maze", ArgsRegex: `[0-9]+`, Required: true, IsInt: true, Disabled: true,
+		},
+		{
+			ID: "h", Help: "Height of the maze", ArgsRegex: `[0-9]+`, Required: true, IsInt: true, Disabled: true,
+		},
+		{
+			ID: "o", Help: "Output file", ArgsRegex: `[0-9a-zA-Z/.\-_]+`, Required: true, IsInt: false, Disabled: false,
+		},
+		{
+			ID: "d", Help: "Difficulty of the maze", ArgsRegex: `[0-9]+`, Required: false, IsInt: true, Disabled: false,
+		},
+		{
+			ID: "help", Help: "Show this help", ArgsRegex: ``, Required: false, IsInt: false, Disabled: false,
+		},
 	}
-	//if unHeight == "" || unWidth == "" {
-	//	help()
-	//	return
-	//}
-	if unSize == "" {
-		help()
-		return
-	}
-	//strWidth := strings.ReplaceAll(unWidth, "-w ", "")
-	//strHeight := strings.ReplaceAll(unHeight, "-h ", "")
-	strSize := strings.ReplaceAll(unSize, "-s ", "")
-
-	//w, err := strconv.Atoi(strWidth)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//h, err := strconv.Atoi(strHeight)
-	//if err != nil {
-	//	panic(err)
-	//}
-	s, err := strconv.Atoi(strSize)
+	app := CLI.CLI{Options: options}
+	got, err := app.Parse(cli)
 	if err != nil {
-		panic(err)
+		//TODO: print help
 	}
+	var s int
+	var out string
 	d := 0
-	if unDifficulty != "" {
-		strDifficulty := strings.ReplaceAll(unDifficulty, "-d ", "")
-		d, err = strconv.Atoi(strDifficulty)
-		if err != nil {
-			panic(err)
+	for _, g := range got {
+		switch g.ID {
+		case "s":
+			s = g.Value.(int)
+		case "d":
+			d = g.Value.(int)
+		case "o":
+			out = g.Value.(string)
+		case "help":
+			//TODO: print help
+			return
 		}
 	}
+
 	m, err := Generators.GenerateNewMaze(uint(s), uint(s), uint(d), Generators.NewRandomisedKruskal)
 	if err != nil {
 		panic(err)
 	}
 	m.RenderWalls()
-	if unOutput != "" {
-		output := strings.ReplaceAll(unOutput, "-o ", "")
-		err = m.Output(output)
+	if out != "" {
+		err = m.Output(out)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Successfully outputted at %s\n", output)
+		fmt.Printf("Successfully outputted at %s\n", out)
 	}
-}
-
-func help() {
-	println("------------------------------")
-	println("HELP OF THE MAZE GENERATOR CLI")
-	println("------------------------------")
-	println("Required arguments:")
-	//println("  -w uint -> Width of the maze")
-	//println("  -h uint -> Height of the maze\n")
-	println("  -s uint -> Size of one side of the maze\n")
-	println("Optional arguments:")
-	println("  -d uint -> Difficulty of the maze")
-	println("  -o string -> Output file of the new maze")
-
 }
