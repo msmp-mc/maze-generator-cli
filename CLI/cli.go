@@ -13,6 +13,7 @@ type Option struct {
 	ArgsRegex string
 	Required  bool
 	IsInt     bool
+	Disabled  bool
 }
 
 type OptionGot struct {
@@ -21,7 +22,7 @@ type OptionGot struct {
 }
 
 type CLI struct {
-	Options []Option
+	Options []*Option
 }
 
 func (o *Option) GetRegex() *regexp.Regexp {
@@ -51,7 +52,7 @@ func (o *Option) parse(cli string) (*OptionGot, error) {
 	return &OptionGot{ID: o.ID, Value: f}, nil
 }
 
-func (c *CLI) AddOption(o Option) *CLI {
+func (c *CLI) AddOption(o *Option) *CLI {
 	c.Options = append(c.Options, o)
 	return c
 }
@@ -59,6 +60,9 @@ func (c *CLI) AddOption(o Option) *CLI {
 func (c *CLI) Parse(cli string) ([]*OptionGot, error) {
 	var got []*OptionGot
 	for _, o := range c.Options {
+		if o.Disabled {
+			continue
+		}
 		g, err := o.parse(cli)
 		if err != nil {
 			return nil, err
@@ -68,4 +72,30 @@ func (c *CLI) Parse(cli string) ([]*OptionGot, error) {
 		}
 	}
 	return got, nil
+}
+
+func (c *CLI) Help() {
+	println("------------------------------")
+	println("HELP OF THE MAZE GENERATOR CLI")
+	println("------------------------------")
+	println("Required arguments:")
+	for _, o := range c.Options {
+		if !o.Required || o.Disabled {
+			continue
+		}
+		if o.IsInt {
+			println(fmt.Sprintf("  -%s uint -> %s", o.ID, o.Help))
+		}
+		println(fmt.Sprintf("  -%s string -> %s", o.ID, o.Help))
+	}
+	println("Optional arguments:")
+	for _, o := range c.Options {
+		if o.Required || o.Disabled {
+			continue
+		}
+		if o.IsInt {
+			println(fmt.Sprintf("  -%s uint -> %s", o.ID, o.Help))
+		}
+		println(fmt.Sprintf("  -%s string -> %s", o.ID, o.Help))
+	}
 }
