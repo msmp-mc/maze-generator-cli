@@ -8,10 +8,6 @@ import (
 )
 
 func main() {
-	if len(os.Args) == 1 {
-		//TODO: show help
-		return
-	}
 	cli := ""
 	for i, a := range os.Args {
 		if i == 0 {
@@ -30,7 +26,7 @@ func main() {
 			ID: "h", Help: "Height of the maze", ArgsRegex: `[0-9]+`, Required: true, IsInt: true, Disabled: true,
 		},
 		{
-			ID: "o", Help: "Output file", ArgsRegex: `[0-9a-zA-Z/.\-_]+`, Required: true, IsInt: false, Disabled: false,
+			ID: "o", Help: "Output file", ArgsRegex: `[0-9a-zA-Z/.\-_]+`, Required: false, IsInt: false, Disabled: false,
 		},
 		{
 			ID: "d", Help: "Difficulty of the maze", ArgsRegex: `[0-9]+`, Required: false, IsInt: true, Disabled: false,
@@ -40,9 +36,15 @@ func main() {
 		},
 	}
 	app := CLI.CLI{Options: options}
+	if len(os.Args) == 1 {
+		app.Help()
+		return
+	}
 	got, err := app.Parse(cli)
 	if err != nil {
-		//TODO: print help
+		println(err.Error())
+		app.Help()
+		return
 	}
 	var s int
 	var out string
@@ -56,7 +58,7 @@ func main() {
 		case "o":
 			out = g.Value.(string)
 		case "help":
-			//TODO: print help
+			app.Help()
 			return
 		}
 	}

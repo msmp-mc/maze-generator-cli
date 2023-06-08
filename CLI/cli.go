@@ -85,6 +85,7 @@ func (c *CLI) Help() {
 		}
 		if o.IsInt {
 			println(fmt.Sprintf("  -%s uint -> %s", o.ID, o.Help))
+			continue
 		}
 		println(fmt.Sprintf("  -%s string -> %s", o.ID, o.Help))
 	}
@@ -95,6 +96,7 @@ func (c *CLI) Help() {
 		}
 		if o.IsInt {
 			println(fmt.Sprintf("  -%s uint -> %s", o.ID, o.Help))
+			continue
 		}
 		println(fmt.Sprintf("  -%s string -> %s", o.ID, o.Help))
 	}
