@@ -13,6 +13,7 @@ It has also another parameters:
 - `-o string` - Set the output file (if it does not give, no output in file)
 - `-d (0,1,2)` - Set the difficulty or 0 by default (0 = easy, 1 = hard, 2 = hardcore)
 - `-g uint` - Number of random gates or 0 by default
+- `-i uint` - Add "a hole" in the center when generating the maze
 - `-help` - Show the help
 
 Example:
