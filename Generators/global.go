@@ -14,6 +14,7 @@ type Maze struct {
 	Difficulty uint
 	Gates      uint
 	GatesLoc   []GateLoc
+	Inner uint
 }
 
 type GateLoc struct {
@@ -49,8 +50,8 @@ type Scheme struct {
 // the number of gates present and algo is the algorithm used
 //
 // Return an error if a problem occurs and nil if there are no errors
-func GenerateNewMaze(w uint, h uint, difficulty uint, gates uint, algo func(*Maze) error) (Maze, error) {
-	maze := Maze{Height: h, Width: w, Difficulty: difficulty, Gates: gates}
+func GenerateNewMaze(w uint, h uint, difficulty uint, gates uint, inner uint, algo func(*Maze) error) (Maze, error) {
+	maze := Maze{Height: h, Width: w, Difficulty: difficulty, Gates: gates, Inner: inner}
 	err := algo(&maze)
 	maze.handleGates()
 	return maze, err

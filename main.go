@@ -37,6 +37,9 @@ func main() {
 		{
 			ID: "help", Help: "Show this help", ArgsRegex: ``, Required: false, IsInt: false, Disabled: false,
 		},
+		{
+			ID: "i", Help: "Add \"a hole\" in the center when generating the maze", ArgsRegex: `[0-9]+`, Required: false, IsInt: true, Disabled: false,
+		},
 	}
 	app := CLI.CLI{Options: options}
 	if len(os.Args) == 1 {
@@ -53,6 +56,7 @@ func main() {
 	var out string
 	d := 0
 	g := 0
+	inner := 0
 	for _, gt := range got {
 		switch gt.ID {
 		case "s":
@@ -63,13 +67,15 @@ func main() {
 			out = gt.Value.(string)
 		case "g":
 			g = gt.Value.(int)
+		case "i":
+			inner = gt.Value.(int)
 		case "help":
 			app.Help()
 			return
 		}
 	}
 
-	m, err := Generators.GenerateNewMaze(uint(s), uint(s), uint(d), uint(g), Generators.NewRandomisedKruskal)
+	m, err := Generators.GenerateNewMaze(uint(s), uint(s), uint(d), uint(g), uint(inner), Generators.NewRandomisedKruskal)
 	if err != nil {
 		panic(err)
 	}
