@@ -123,16 +123,19 @@ func (m *Maze) generateCells() []*Cell {
 }
 
 func (m *Maze) innerHole() {
-	cI := m.Width/2
-	cJ := m.Height/2
-	mid := m.Inner/2
 	for _, c := range m.Cells {
-		i, j := m.GenIJFromIDForCell(uint(c.ID))
-		if !(i >= cI - mid && i < cI + mid && j >= cJ - mid && j < cJ + mid) {
+		if !m.isInHole(m.GenIJFromIDForCell(uint(c.ID))) {
 			continue
 		}
 		c.Disabled = true
 	}
+}
+
+func (m *Maze) isInHole(i uint, j uint) bool {
+	cI := m.Width/2
+	cJ := m.Height/2
+	mid := m.Inner/2
+	return i >= cI - mid && i < cI + mid && j >= cJ - mid && j < cJ + mid
 }
 
 // GetHorizontalWallsNumber return the number of horizontal walls
@@ -168,8 +171,16 @@ func (m *Maze) ToScheme() Scheme {
 				continue
 			}
 			if wall.IsVertical {
+				if len(wall.CellsNear) == 2 && (wall.CellsNear[0].Disabled || wall.CellsNear[1].Disabled) {
+					str += "-"
+					continue
+				}
 				str += "|"
 			} else {
+				if len(wall.CellsNear) == 2 && wall.CellsNear[0].Disabled {
+					str += "X"
+					continue
+				}
 				str += "_"
 			}
 		}
