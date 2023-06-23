@@ -38,6 +38,7 @@ type Cell struct {
 	MergedCell *[]*Cell
 	// MergedRef refers to the parent cell containing the full MergedCell
 	MergedRef *Cell
+	Disabled bool
 }
 
 type Scheme struct {
@@ -117,7 +118,21 @@ func (m *Maze) generateCells() []*Cell {
 		}
 	}
 	m.Cells = cells
+	m.innerHole()
 	return cells
+}
+
+func (m *Maze) innerHole() {
+	cI := m.Width/2
+	cJ := m.Height/2
+	mid := m.Inner/2
+	for _, c := range m.Cells {
+		i, j := m.GenIJFromIDForCell(uint(c.ID))
+		if !(i >= cI - mid && i < cI + mid && j >= cJ - mid && j < cJ + mid) {
+			continue
+		}
+		c.Disabled = true
+	}
 }
 
 // GetHorizontalWallsNumber return the number of horizontal walls
@@ -184,6 +199,12 @@ func (m *Maze) GenIDFromIJForWall(i uint, j uint) uint {
 // Return the id
 func (m *Maze) GenIDFromIJForCell(i uint, j uint) uint {
 	return m.Height*i + j
+}
+
+func (m *Maze) GenIJFromIDForCell(id uint) (uint, uint) {
+	// id = m.Height*i + j
+	j := id%m.Height
+	return (id-j)/m.Height, j
 }
 
 // GenJForLeftWallFromJOfCell generate the J coords for the wall at the left of the cell

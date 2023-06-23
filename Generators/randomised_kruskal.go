@@ -51,8 +51,13 @@ func NewRandomisedKruskal(b *Maze) error {
 
 // mergeRandomly merge two random cells
 func (m *kruskal) mergeRandomly() error {
-	id := utils.RandMax(uint(len(m.Cells) - 1))
-	cell := m.Cells[id]
+	valid := false
+	var cell *Cell
+	for !valid {
+		id := utils.RandMax(uint(len(m.Cells) - 1))
+		cell = m.Cells[id]
+		valid = !cell.Disabled
+	}
 	var walls []*Wall
 	if cell.WallLeft != nil {
 		walls = append(walls, cell.WallLeft)
@@ -88,6 +93,9 @@ func (m *kruskal) mergeRandomly() error {
 	} else {
 		return nil
 	}
+	if mergeWith.Disabled {
+		return nil
+	}
 	wall.IsPresent = false
 	if mergeWith.ID == cell.ID {
 		return fmt.Errorf("the cell with the id %d is the same as the cell with the id %d", mergeWith.ID, cell.ID)
@@ -106,5 +114,5 @@ func (m *kruskal) mergeRandomly() error {
 //
 // Return true if the maze is finished, false otherwise
 func (m *kruskal) isFinished() bool {
-	return uint(len(*m.Cells[0].MergedRef.MergedCell)) == m.Width*m.Height
+	return uint(len(*m.Cells[0].MergedRef.MergedCell)) == m.Width*m.Height - m.Inner*m.Inner
 }
