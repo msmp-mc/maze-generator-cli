@@ -37,12 +37,26 @@ func NewRandomisedKruskal(b *Maze) error {
 	if m.Difficulty > 0 {
 		size := len(m.Walls)
 		for n := 0; n < int(math.Floor(float64(size/4)*(float64(m.Difficulty)*0.05))); n++ {
-			id := uint(utils.RandMax(uint(size - 1)))
-			i, j := m.GenIJFromIDOfWall(id)
-			if i == 0 || i == m.Width-1 || j == m.Height-1 {
-				continue
+			valid := false
+			var wall Wall
+			for !valid {
+				id := uint(utils.RandMax(uint(size - 1)))
+				i, j := m.GenIJFromIDOfWall(id)
+				if i == 0 || i == m.Width-1 || j == m.Height-1 {
+					continue
+				}
+				wall = m.Walls[id]
+				if wall.IsVertical {
+					if !(wall.CellsNear[0].Disabled || wall.CellsNear[1].Disabled) {
+						valid = true
+					}
+				} else {
+					if !wall.CellsNear[0].Disabled {
+						valid = true
+					}
+				}
 			}
-			m.Walls[id].IsPresent = false
+			wall.IsPresent = false
 		}
 	}
 	println("Merging done!")
@@ -114,5 +128,5 @@ func (m *kruskal) mergeRandomly() error {
 //
 // Return true if the maze is finished, false otherwise
 func (m *kruskal) isFinished() bool {
-	return uint(len(*m.Cells[0].MergedRef.MergedCell)) == m.Width*m.Height - m.Inner*m.Inner
+	return uint(len(*m.Cells[0].MergedRef.MergedCell)) == m.Width*m.Height-m.Inner*m.Inner
 }
